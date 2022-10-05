@@ -9,8 +9,10 @@ interface
     function Valor(value : real) : ICentroCusto; overload;
     function Valor : real; overload;
 
-    function Codigo(value : integer) : ICentroCusto; overload;
-    function Codigo : integer; overload;
+    function Codigo(value : string) : ICentroCusto; overload;
+    function Codigo : string; overload;
+
+    procedure ValidarCodigo(codigo : string);
   end;
 
   type ICentroCustoPai = interface(ICentroCusto)
@@ -22,10 +24,11 @@ interface
   ['{0DC6AA81-E477-46CA-8EF9-0EC1E2571AB3}']
     function CentroCustoPai(centroCusto : ICentroCustoPai) : ICentroCustoFilho; overload;
     function CentroCustoPai : ICentroCustoPai; overload;
-    function DeletarPai(centroCusto : ICentroCustoPai) : ICentroCustoFilho;
 
     procedure AtualizarPai;
   end;
+
+
 
 implementation
 

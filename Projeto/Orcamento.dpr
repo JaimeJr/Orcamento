@@ -3,7 +3,9 @@ program Orcamento;
 uses
   Vcl.Forms,
   frmPrincipal in 'Telas\frmPrincipal.pas' {Form1},
-  uiCentroCusto in 'Interfaces\uiCentroCusto.pas';
+  uCentroCusto in 'Classes\uCentroCusto.pas',
+  uiCentroCusto in 'Interfaces\uiCentroCusto.pas',
+  uExcecoes in 'Excecoes\uExcecoes.pas';
 
 {$R *.res}
 

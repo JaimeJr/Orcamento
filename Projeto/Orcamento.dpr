@@ -2,7 +2,7 @@ program Orcamento;
 
 uses
   Vcl.Forms,
-  frmPrincipal in 'Telas\frmPrincipal.pas' {Form1},
+  frmPrincipal in 'Telas\frmPrincipal.pas' {frmCentroCusto},
   uCentroCusto in 'Classes\uCentroCusto.pas',
   uiCentroCusto in 'Interfaces\uiCentroCusto.pas',
   uExcecoes in 'Excecoes\uExcecoes.pas';
@@ -12,6 +12,6 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TfrmCentroCusto, frmCentroCusto);
   Application.Run;
 end.

@@ -1,4 +1,4 @@
-object Form1: TForm1
+object frmCentroCusto: TfrmCentroCusto
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
@@ -11,6 +11,8 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object pnlFundo: TPanel
@@ -21,9 +23,6 @@ object Form1: TForm1
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitLeft = -8
-    ExplicitWidth = 1346
-    ExplicitHeight = 851
     object pnlCabecalho: TPanel
       Left = 0
       Top = 0
@@ -57,6 +56,7 @@ object Form1: TForm1
         Top = 25
         Width = 121
         Height = 21
+        NumbersOnly = True
         TabOrder = 0
       end
       object edtValor: TEdit
@@ -68,12 +68,21 @@ object Form1: TForm1
         TabOrder = 1
       end
       object btnConfirmar: TButton
-        Left = 229
+        Left = 317
         Top = 25
         Width = 75
         Height = 21
         Caption = 'Confirmar'
+        TabOrder = 3
+      end
+      object btnAdicionar: TButton
+        Left = 229
+        Top = 25
+        Width = 75
+        Height = 21
+        Caption = 'Adicionar'
         TabOrder = 2
+        OnClick = btnAdicionarClick
       end
     end
     object pnlGrids: TPanel
@@ -84,9 +93,6 @@ object Form1: TForm1
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitTop = 95
-      ExplicitWidth = 1346
-      ExplicitHeight = 488
       object pnlCentroCustoResumo: TPanel
         AlignWithMargins = True
         Left = 6
@@ -98,9 +104,7 @@ object Form1: TForm1
         Margins.Right = 6
         Margins.Bottom = 6
         Align = alBottom
-        TabOrder = 0
-        ExplicitTop = 312
-        ExplicitWidth = 676
+        TabOrder = 2
         object grdCentroCustoResumo: TDBGrid
           Left = 1
           Top = 1
@@ -108,6 +112,7 @@ object Form1: TForm1
           Height = 82
           Align = alClient
           BorderStyle = bsNone
+          DataSource = dsCentroCustoResumo
           Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack]
           ReadOnly = True
           TabOrder = 0
@@ -116,6 +121,17 @@ object Form1: TForm1
           TitleFont.Height = -11
           TitleFont.Name = 'Tahoma'
           TitleFont.Style = []
+          Columns = <
+            item
+              Expanded = False
+              FieldName = 'CODIGO'
+              Visible = True
+            end
+            item
+              Expanded = False
+              FieldName = 'VALOR'
+              Visible = True
+            end>
         end
       end
       object pnlCentroCustoFilho: TPanel
@@ -130,8 +146,6 @@ object Form1: TForm1
         Margins.Bottom = 6
         Align = alClient
         TabOrder = 1
-        ExplicitLeft = 318
-        ExplicitWidth = 300
         object grdCentroCustoFilho: TDBGrid
           Left = 1
           Top = 1
@@ -160,7 +174,7 @@ object Form1: TForm1
         Margins.Right = 6
         Margins.Bottom = 6
         Align = alLeft
-        TabOrder = 2
+        TabOrder = 0
         object grdCentroCustoPai: TDBGrid
           Left = 1
           Top = 1
@@ -189,6 +203,7 @@ object Form1: TForm1
     Top = 168
   end
   object dsCentroCustoResumo: TDataSource
+    DataSet = cdsCentroCustoResumo
     Left = 272
     Top = 424
   end

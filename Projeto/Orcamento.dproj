@@ -99,7 +99,7 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="Telas\frmPrincipal.pas">
-            <Form>Form1</Form>
+            <Form>frmCentroCusto</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Classes\uCentroCusto.pas"/>

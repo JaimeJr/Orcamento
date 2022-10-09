@@ -38,6 +38,9 @@ type
     cdsCentroCustoResumoVALOR: TFloatField;
     cdsCentroCustoFilhoCODIGO: TStringField;
     cdsCentroCustoFilhoVALOR: TFloatField;
+    Panel1: TPanel;
+    Panel2: TPanel;
+    Panel3: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure btnAdicionarClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);

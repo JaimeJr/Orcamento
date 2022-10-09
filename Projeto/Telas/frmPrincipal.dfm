@@ -111,15 +111,15 @@ object frmCentroCusto: TfrmCentroCusto
         TabOrder = 2
         object grdCentroCustoResumo: TDBGrid
           Left = 1
-          Top = 1
+          Top = 19
           Width = 605
-          Height = 250
+          Height = 232
           Align = alClient
           BorderStyle = bsNone
           DataSource = dsCentroCustoResumo
           Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack]
           ReadOnly = True
-          TabOrder = 0
+          TabOrder = 1
           TitleFont.Charset = DEFAULT_CHARSET
           TitleFont.Color = clWindowText
           TitleFont.Height = -11
@@ -136,6 +136,20 @@ object frmCentroCusto: TfrmCentroCusto
               FieldName = 'VALOR'
               Visible = True
             end>
+        end
+        object Panel3: TPanel
+          AlignWithMargins = True
+          Left = 1
+          Top = 1
+          Width = 605
+          Height = 15
+          Margins.Left = 0
+          Margins.Top = 0
+          Margins.Right = 0
+          Align = alTop
+          BevelOuter = bvNone
+          Caption = 'Resumo'
+          TabOrder = 0
         end
       end
       object pnlCentroCustoFilho: TPanel
@@ -150,18 +164,17 @@ object frmCentroCusto: TfrmCentroCusto
         Margins.Bottom = 6
         Align = alClient
         TabOrder = 1
-        ExplicitHeight = 326
         object grdCentroCustoFilho: TDBGrid
           Left = 1
-          Top = 1
+          Top = 19
           Width = 295
-          Height = 156
+          Height = 138
           Align = alClient
           BorderStyle = bsNone
           DataSource = dsCentroCustoFilho
           Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack]
           ReadOnly = True
-          TabOrder = 0
+          TabOrder = 1
           TitleFont.Charset = DEFAULT_CHARSET
           TitleFont.Color = clWindowText
           TitleFont.Height = -11
@@ -179,6 +192,20 @@ object frmCentroCusto: TfrmCentroCusto
               Visible = True
             end>
         end
+        object Panel2: TPanel
+          AlignWithMargins = True
+          Left = 1
+          Top = 1
+          Width = 295
+          Height = 15
+          Margins.Left = 0
+          Margins.Top = 0
+          Margins.Right = 0
+          Align = alTop
+          BevelOuter = bvNone
+          Caption = 'Filho'
+          TabOrder = 0
+        end
       end
       object pnlCentroCustoPai: TPanel
         AlignWithMargins = True
@@ -192,18 +219,17 @@ object frmCentroCusto: TfrmCentroCusto
         Margins.Bottom = 6
         Align = alLeft
         TabOrder = 0
-        ExplicitHeight = 326
         object grdCentroCustoPai: TDBGrid
           Left = 1
-          Top = 1
+          Top = 19
           Width = 296
-          Height = 156
+          Height = 138
           Align = alClient
           BorderStyle = bsNone
           DataSource = dsCentroCustoPai
           Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack]
           ReadOnly = True
-          TabOrder = 0
+          TabOrder = 1
           TitleFont.Charset = DEFAULT_CHARSET
           TitleFont.Color = clWindowText
           TitleFont.Height = -11
@@ -220,6 +246,20 @@ object frmCentroCusto: TfrmCentroCusto
               FieldName = 'VALOR'
               Visible = True
             end>
+        end
+        object Panel1: TPanel
+          AlignWithMargins = True
+          Left = 1
+          Top = 1
+          Width = 296
+          Height = 15
+          Margins.Left = 0
+          Margins.Top = 0
+          Margins.Right = 0
+          Align = alTop
+          BevelOuter = bvNone
+          Caption = 'Pai'
+          TabOrder = 0
         end
       end
     end

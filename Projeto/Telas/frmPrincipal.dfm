@@ -2,6 +2,7 @@ object frmCentroCusto: TfrmCentroCusto
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
+  Caption = 'Centro de Custo'
   ClientHeight = 483
   ClientWidth = 619
   Color = clBtnFace
@@ -11,8 +12,9 @@ object frmCentroCusto: TfrmCentroCusto
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDesktopCenter
+  OnClose = FormClose
   OnCreate = FormCreate
-  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object pnlFundo: TPanel
@@ -56,6 +58,7 @@ object frmCentroCusto: TfrmCentroCusto
         Top = 25
         Width = 121
         Height = 21
+        MaxLength = 6
         NumbersOnly = True
         TabOrder = 0
       end
@@ -74,6 +77,7 @@ object frmCentroCusto: TfrmCentroCusto
         Height = 21
         Caption = 'Confirmar'
         TabOrder = 3
+        OnClick = btnConfirmarClick
       end
       object btnAdicionar: TButton
         Left = 229
@@ -96,9 +100,9 @@ object frmCentroCusto: TfrmCentroCusto
       object pnlCentroCustoResumo: TPanel
         AlignWithMargins = True
         Left = 6
-        Top = 344
+        Top = 176
         Width = 607
-        Height = 84
+        Height = 252
         Margins.Left = 6
         Margins.Top = 6
         Margins.Right = 6
@@ -109,7 +113,7 @@ object frmCentroCusto: TfrmCentroCusto
           Left = 1
           Top = 1
           Width = 605
-          Height = 82
+          Height = 250
           Align = alClient
           BorderStyle = bsNone
           DataSource = dsCentroCustoResumo
@@ -139,20 +143,22 @@ object frmCentroCusto: TfrmCentroCusto
         Left = 316
         Top = 6
         Width = 297
-        Height = 326
+        Height = 158
         Margins.Left = 6
         Margins.Top = 6
         Margins.Right = 6
         Margins.Bottom = 6
         Align = alClient
         TabOrder = 1
+        ExplicitHeight = 326
         object grdCentroCustoFilho: TDBGrid
           Left = 1
           Top = 1
           Width = 295
-          Height = 324
+          Height = 156
           Align = alClient
           BorderStyle = bsNone
+          DataSource = dsCentroCustoFilho
           Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack]
           ReadOnly = True
           TabOrder = 0
@@ -161,6 +167,17 @@ object frmCentroCusto: TfrmCentroCusto
           TitleFont.Height = -11
           TitleFont.Name = 'Tahoma'
           TitleFont.Style = []
+          Columns = <
+            item
+              Expanded = False
+              FieldName = 'CODIGO'
+              Visible = True
+            end
+            item
+              Expanded = False
+              FieldName = 'VALOR'
+              Visible = True
+            end>
         end
       end
       object pnlCentroCustoPai: TPanel
@@ -168,20 +185,22 @@ object frmCentroCusto: TfrmCentroCusto
         Left = 6
         Top = 6
         Width = 298
-        Height = 326
+        Height = 158
         Margins.Left = 6
         Margins.Top = 6
         Margins.Right = 6
         Margins.Bottom = 6
         Align = alLeft
         TabOrder = 0
+        ExplicitHeight = 326
         object grdCentroCustoPai: TDBGrid
           Left = 1
           Top = 1
           Width = 296
-          Height = 324
+          Height = 156
           Align = alClient
           BorderStyle = bsNone
+          DataSource = dsCentroCustoPai
           Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack]
           ReadOnly = True
           TabOrder = 0
@@ -190,15 +209,28 @@ object frmCentroCusto: TfrmCentroCusto
           TitleFont.Height = -11
           TitleFont.Name = 'Tahoma'
           TitleFont.Style = []
+          Columns = <
+            item
+              Expanded = False
+              FieldName = 'CODIGO'
+              Visible = True
+            end
+            item
+              Expanded = False
+              FieldName = 'VALOR'
+              Visible = True
+            end>
         end
       end
     end
   end
   object dsCentroCustoPai: TDataSource
+    DataSet = cdsCentroCustoPai
     Left = 128
     Top = 184
   end
   object dsCentroCustoFilho: TDataSource
+    DataSet = cdsCentroCustoFilho
     Left = 528
     Top = 168
   end
@@ -212,10 +244,13 @@ object frmCentroCusto: TfrmCentroCusto
     Params = <>
     Left = 128
     Top = 144
-    object cdsCentroCustoPaiCODIGO: TIntegerField
+    object cdsCentroCustoPaiCODIGO: TStringField
+      DisplayLabel = 'C'#243'digo'
       FieldName = 'CODIGO'
+      Size = 2
     end
     object cdsCentroCustoPaiVALOR: TFloatField
+      DisplayLabel = 'Valor'
       FieldName = 'VALOR'
     end
   end
@@ -224,10 +259,13 @@ object frmCentroCusto: TfrmCentroCusto
     Params = <>
     Left = 528
     Top = 136
-    object cdsCentroCustoFilhoCODIGO: TIntegerField
+    object cdsCentroCustoFilhoCODIGO: TStringField
+      DisplayLabel = 'C'#243'digo'
       FieldName = 'CODIGO'
+      Size = 4
     end
     object cdsCentroCustoFilhoVALOR: TFloatField
+      DisplayLabel = 'Valor'
       FieldName = 'VALOR'
     end
   end
@@ -236,10 +274,13 @@ object frmCentroCusto: TfrmCentroCusto
     Params = <>
     Left = 272
     Top = 392
-    object cdsCentroCustoResumoCODIGO: TIntegerField
+    object cdsCentroCustoResumoCODIGO: TStringField
+      DisplayLabel = 'C'#243'digo'
       FieldName = 'CODIGO'
+      Size = 6
     end
     object cdsCentroCustoResumoVALOR: TFloatField
+      DisplayLabel = 'Valor'
       FieldName = 'VALOR'
     end
   end

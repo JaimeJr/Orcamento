@@ -9,8 +9,8 @@ interface
     function Codigo(value : string) : ICentroCusto; overload;
     function Codigo : string; overload;
 
-    function Valor(value : real) : ICentroCusto; overload;
-    function Valor : real; overload;
+    function Valor(value : Real) : ICentroCusto; overload;
+    function Valor : Real; overload;
   end;
 
   type ICentroCustoObserver = interface(ICentroCusto)
@@ -28,10 +28,16 @@ interface
 
   type ICentroCustoSubject = interface(ICentroCusto)
     ['{430A4209-FCEE-442E-810F-7543AA967E63}']
-    function Observers : TList<ICentroCustoObserver>;
+    function Observers : TList<ICentroCustoObserver>; overload;
+    function Observers(observers : TList<ICentroCustoObserver>) : ICentroCustoSubject; overload;
     function AddObserver(centroCusto : ICentroCustoObserver) : ICentroCustoSubject;
     function Contains(centroCusto : ICentroCusto) : Boolean;
-    procedure AtualizarObservers;
+    procedure AtualizarObservers(valor : Real);
+    function ValorTotal : Real;
+  end;
+
+  type IValidacoesCentroCusto = interface
+    ['{4C511A77-D845-413D-8B8F-4FD81A573C3F}']
   end;
 
 implementation

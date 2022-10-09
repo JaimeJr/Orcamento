@@ -31,19 +31,21 @@ type
     cdsCentroCustoPai: TClientDataSet;
     cdsCentroCustoFilho: TClientDataSet;
     cdsCentroCustoResumo: TClientDataSet;
-    cdsCentroCustoFilhoCODIGO: TIntegerField;
-    cdsCentroCustoFilhoVALOR: TFloatField;
-    cdsCentroCustoPaiCODIGO: TIntegerField;
-    cdsCentroCustoPaiVALOR: TFloatField;
-    cdsCentroCustoResumoCODIGO: TIntegerField;
-    cdsCentroCustoResumoVALOR: TFloatField;
     btnAdicionar: TButton;
+    cdsCentroCustoPaiCODIGO: TStringField;
+    cdsCentroCustoPaiVALOR: TFloatField;
+    cdsCentroCustoResumoCODIGO: TStringField;
+    cdsCentroCustoResumoVALOR: TFloatField;
+    cdsCentroCustoFilhoCODIGO: TStringField;
+    cdsCentroCustoFilhoVALOR: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure btnAdicionarClick(Sender: TObject);
-    procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure btnConfirmarClick(Sender: TObject);
   private
     { Private declarations }
-    FCentrosCusto: TList<ICentroCustoSubject>;
+    FCentroCusto: ICentroCustoSubject;
+    FValidacoesCentroCusto: TValidacoes;
 
     procedure TratarExcecao(Sender: TObject; E: Exception);
     procedure AdicionarCentroCusto(codigo: string; valor: Real);
@@ -51,6 +53,7 @@ type
     procedure PreencherResumo(cdsResumo: TClientDataSet);
     procedure PreencherPai(cdsPai: TClientDataSet);
     procedure PreencherFilho(cdsFilho: TClientDataSet);
+    procedure MostrarValorTotal;
   public
     { Public declarations }
   end;
@@ -67,23 +70,43 @@ implementation
 procedure TfrmCentroCusto.AdicionarCentroCusto(codigo: string; valor: Real);
 var
   centroCustoObserver: ICentroCustoObserver;
-  centroCusto: ICentroCustoSubject;
+  centroCusto: ICentroCustoObserver;
+  novoCentroCusto: Boolean;
+
+  procedure AtualizarCentroCusto;
+  var
+    valorAtual: Real;
+  begin
+    valorAtual := FCentroCusto.Observers.Items[TValidacoes.PosicaoCentroCusto(FCentroCusto.Observers, centroCusto)].valor;
+
+    FCentroCusto.Observers.Items[TValidacoes.PosicaoCentroCusto(FCentroCusto.Observers, centroCusto)].valor(valorAtual + valor);
+  end;
+
 begin
   try
-    TCentroCusto.ValidarCodigo(codigo);
+    FValidacoesCentroCusto.ValidarCodigo(codigo);
 
-    centroCustoObserver := ICentroCustoObserver(TCentroCustoObserver.
-                             Criar.
-                               Codigo(codigo).
-                               valor(valor));
+    if not Assigned(FCentroCusto) then
+      FCentroCusto := TCentroCustoSubject.Create;
 
-    centroCusto := TCentroCustoSubject.Create;
-    centroCusto.AddObserver(centroCustoObserver);
-    centroCusto.Codigo(codigo);
-    centroCusto.Valor(valor);
+    FCentroCusto.Codigo(codigo);
 
-    if not FCentrosCusto.Contains(centroCusto) then
-      FCentrosCusto.Add(centroCusto);
+    centroCustoObserver := ICentroCustoObserver(TCentroCustoObserver.Criar.Codigo(codigo).valor(valor));
+
+    novoCentroCusto := not (TValidacoes.ContemCentroCusto(FCentroCusto.Observers, centroCustoObserver));
+
+    if novoCentroCusto then
+    begin
+      centroCusto := TCentroCustoObserver.Create;
+      centroCusto.Codigo(codigo);
+    end
+    else
+      centroCusto := FCentroCusto.Observers.Items[TValidacoes.PosicaoCentroCusto(FCentroCusto.Observers, centroCustoObserver)];
+
+    if novoCentroCusto then
+      FCentroCusto.AddObserver(centroCusto);
+
+    FCentroCusto.Valor(valor);
   except
     raise;
   end;
@@ -91,21 +114,39 @@ end;
 
 procedure TfrmCentroCusto.btnAdicionarClick(Sender: TObject);
 begin
+  if edtValor.Text = '' then
+    raise EValorEmBrancoException.Create('O valor informado esta em branco');
+
   AdicionarCentroCusto(edtCentroCusto.Text, StrToFloat(edtValor.Text));
   PreencherDataSet(cdsCentroCustoResumo, cdsCentroCustoPai, cdsCentroCustoFilho);
+end;
+
+procedure TfrmCentroCusto.btnConfirmarClick(Sender: TObject);
+begin
+  MostrarValorTotal;
+end;
+
+procedure TfrmCentroCusto.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  FValidacoesCentroCusto.DisposeOf;
 end;
 
 procedure TfrmCentroCusto.FormCreate(Sender: TObject);
 begin
   Application.OnException := TratarExcecao;
-  FCentrosCusto := TList<ICentroCustoSubject>.Create;
+  FValidacoesCentroCusto := TValidacoes.Create;
 end;
 
-procedure TfrmCentroCusto.FormShow(Sender: TObject);
+procedure TfrmCentroCusto.MostrarValorTotal;
+var
+  valorTotal: string;
 begin
-  edtCentroCusto.Text := '010001';
-  edtValor.Text := '1';
-  btnAdicionarClick(Sender);
+  if cdsCentroCustoResumo.IsEmpty then
+    raise ESemCentroCustoException.Create('Não há centro de custo informado');
+
+  valorTotal := FloatToStr(FCentroCusto.ValorTotal);
+
+  Application.MessageBox(PChar('Valor total dos centros de custo: R$' + valorTotal), PChar('Valor Total'), MB_OK + MB_ICONINFORMATION);
 end;
 
 procedure TfrmCentroCusto.PreencherDataSet(cdsResumo, cdsPai, cdsFilho: TClientDataSet);
@@ -116,29 +157,68 @@ begin
 end;
 
 procedure TfrmCentroCusto.PreencherFilho(cdsFilho: TClientDataSet);
+var
+  centroCustoObserver: ICentroCustoObserver;
 begin
+  if not cdsCentroCustoFilho.Active then
+    cdsCentroCustoFilho.CreateDataSet;
 
+  cdsCentroCustoFilho.EmptyDataSet;
+
+  for centroCustoObserver in FCentroCusto.Observers do
+  begin
+    if Length(centroCustoObserver.Codigo) <> 4 then
+      Continue;
+
+    cdsCentroCustoFilho.Append;
+    cdsCentroCustoFilhoCODIGO.AsString := centroCustoObserver.Codigo;
+    cdsCentroCustoFilhoVALOR.AsFloat := centroCustoObserver.Valor;
+    cdsCentroCustoFilho.Post;
+  end;
+
+  cdsCentroCustoFilho.Open;
 end;
 
 procedure TfrmCentroCusto.PreencherPai(cdsPai: TClientDataSet);
+var
+  centroCustoObserver: ICentroCustoObserver;
 begin
+  if not cdsCentroCustoPai.Active then
+    cdsCentroCustoPai.CreateDataSet;
 
+  cdsCentroCustoPai.EmptyDataSet;
+
+  for centroCustoObserver in FCentroCusto.Observers do
+  begin
+    if Length(centroCustoObserver.Codigo) <> 2 then
+      Continue;
+
+    cdsCentroCustoPai.Append;
+    cdsCentroCustoPaiCODIGO.AsString := centroCustoObserver.Codigo;
+    cdsCentroCustoPaiVALOR.AsFloat := centroCustoObserver.Valor;
+    cdsCentroCustoPai.Post;
+  end;
+
+  cdsCentroCustoPai.Open;
 end;
 
 procedure TfrmCentroCusto.PreencherResumo(cdsResumo: TClientDataSet);
 var
-  centroCusto: ICentroCustoSubject;
+  centroCustoObserver: ICentroCustoObserver;
 begin
   if not cdsCentroCustoResumo.Active then
     cdsCentroCustoResumo.CreateDataSet;
 
   cdsCentroCustoResumo.EmptyDataSet;
 
-  for centroCusto in FCentrosCusto do
+  for centroCustoObserver in FCentroCusto.Observers do
   begin
+    if Length(centroCustoObserver.Codigo) <> 6 then
+      Continue;
+
     cdsCentroCustoResumo.Append;
-    cdsCentroCustoResumoCODIGO.AsString := centroCusto.Codigo;
-    cdsCentroCustoResumoVALOR.AsFloat := centroCusto.Valor;
+    cdsCentroCustoResumoCODIGO.AsString := centroCustoObserver.Codigo;
+    cdsCentroCustoResumoVALOR.AsFloat := centroCustoObserver.Valor;
     cdsCentroCustoResumo.Post;
   end;
 
@@ -160,8 +240,14 @@ begin
     Exit;
   end;
 
-  Application.MessageBox(PChar(E.Message),
-    'Ocorreu uma exeção relacionada ao centro de custo.', MB_OK + MB_ICONSTOP);
+  if E is EValorEmBrancoException then
+  begin
+    Application.MessageBox(PChar(E.Message), 'Ocorreu uma exeção no preenchimento do valor do centro de custo', MB_OK + MB_ICONSTOP);
+    edtValor.SetFocus;
+    Exit;
+  end;
+
+  Application.MessageBox(PChar(E.Message), 'Ocorreu uma exeção relacionada ao centro de custo.', MB_OK + MB_ICONSTOP);
 end;
 
 end.

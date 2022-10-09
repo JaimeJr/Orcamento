@@ -12,7 +12,6 @@ type
     FValor: Real;
   public
     class function Criar: ICentroCusto;
-    class procedure ValidarCodigo(codigo: string);
 
     constructor Create;
     function Valor: real; overload;
@@ -22,36 +21,38 @@ type
     function Codigo(value: string): ICentroCusto; overload; virtual;
   end;
 
-type
   TCentroCustoSubject = class(TCentroCusto, ICentroCustoSubject)
   private
     FObservers: TList<ICentroCustoObserver>;
-    procedure AtualizarObservers;
+    procedure AtualizarObservers(valor : Real);
   public
-    function Observers: TList<ICentroCustoObserver>;
-    function Contains(centroCusto : ICentroCusto) : Boolean;
+    function Observers: TList<ICentroCustoObserver>; overload;
+    function Observers(observers: TList<ICentroCustoObserver>): ICentroCustoSubject; overload;
+    function Contains(centroCusto: ICentroCusto): Boolean;
     function Valor(value: Real): ICentroCusto; override;
-//    function Codigo(value: string): ICentroCusto; override;
+    function ValorTotal : Real;
     class function Criar: ICentroCustoSubject;
     constructor Create;
 
-    function AddObserver(centroCusto : ICentroCustoObserver) : ICentroCustoSubject;
+    function AddObserver(centroCusto: ICentroCustoObserver): ICentroCustoSubject;
   end;
 
-type
   TCentroCustoObserver = class(TCentroCusto, ICentroCustoObserver)
   public
     constructor Create;
-    class function Criar : ICentroCustoObserver;
-    procedure AtualizarObserver(novoValor : Real);
+    class function Criar: ICentroCustoObserver;
+    procedure AtualizarObserver(novoValor: Real);
   end;
 
-type
-  TCentroCustoPai = class(TCentroCustoObserver)
-  end;
+  TValidacoes = class(TInterfacedObject, IValidacoesCentroCusto)
+    class function RetornarCodigoPai(codigo: string): string;
+    class function RetonarCodigoFilho(codigo: string): string;
+    class procedure ValidarCodigo(codigo: string);
+    class function ContemCentroCusto(centrosCusto: TList<ICentroCustoObserver>; novoCentroCusto: ICentroCusto): Boolean; overload;
+    class function ContemCentroCusto(centrosCusto: TList<ICentroCustoSubject>; novoCentroCusto: ICentroCusto): Boolean; overload;
 
-type
-  TCentroCustoFilho = class(TCentroCustoObserver)
+    class function PosicaoCentroCusto(centrosCusto: TList<ICentroCustoObserver>; novoCentroCusto: ICentroCusto): Integer; overload;
+    class function PosicaoCentroCusto(centrosCusto: TList<ICentroCustoSubject>; novoCentroCusto: ICentroCusto): Integer; overload;
   end;
 
 implementation
@@ -79,29 +80,10 @@ begin
   Result := Self.Create;
 end;
 
-class procedure TCentroCusto.ValidarCodigo(codigo: string);
-var
-  codigoPai,
-  codigoFilho : Integer;
-begin
-  if Length(codigo) <> 6 then
-    raise ECodigoInvalidoException.Create('O código do centro de custo deve conter 6 dígitos');
-
-  codigoPai := StrToInt(Copy(codigo, 0, 2));
-
-  if not (codigoPai in [1..99]) then
-    raise ECodigoInvalidoException.Create('O código do centro de custo pai aceita somente valores de 01 até 99');
-
-  codigoFilho := StrToInt(Copy(codigo, 2, 4));
-
-  if (codigoFilho < 1) or (codigoFilho >= 9999) then
-    raise ECodigoInvalidoException.Create('O código do centro de custo filho aceita somente valores de 0001 ate 9999');
-end;
-
 function TCentroCusto.Valor(value: real): ICentroCusto;
 begin
   Result := Self;
-  FValor := value;
+  FValor := FValor + value;
 end;
 
 function TCentroCusto.Valor: real;
@@ -111,73 +93,63 @@ end;
 
 { TCentroCustoSubject }
 
-function TCentroCustoSubject.AddObserver(centroCusto : ICentroCustoObserver) : ICentroCustoSubject;
+function TCentroCustoSubject.AddObserver(centroCusto: ICentroCustoObserver): ICentroCustoSubject;
 var
-  centroCustoPai,
-  centroCustoFilho : ICentroCustoObserver;
+  centroCustoPai, centroCustoFilho, centroCustoResumo: ICentroCustoObserver;
 
-  procedure PreencherPaiFilho;
+  procedure PreencherObservers;
   var
-    novoCodigo : string;
+    novoCodigo: string;
   begin
-    novoCodigo := Copy(centroCusto.Codigo, 0, 2);
-    centroCustoPai := TCentroCustoPai(TCentroCustoPai.
+    novoCodigo := TValidacoes.RetornarCodigoPai(centroCusto.Codigo);
+    centroCustoPai := TCentroCustoObserver(TCentroCustoObserver.
                         Criar.
                           Codigo(novoCodigo).
-                          Valor(centroCusto.Valor));
+                          Valor(0));
 
-    novoCodigo := Copy(centroCusto.Codigo, 2, 4);
-    centroCustoFilho := TCentroCustoFilho(TCentroCustoFilho.
-                        Criar.
-                          Codigo(novoCodigo).
-                          Valor(centroCusto.Valor));
-  end;
+    novoCodigo := TValidacoes.RetonarCodigoFilho(centroCusto.Codigo);
+    centroCustoFilho := TCentroCustoObserver(TCentroCustoObserver.
+                          Criar.
+                            Codigo(novoCodigo).
+                            Valor(0));
 
-  function Contem(novoCentroCusto : ICentroCusto) : Boolean;
-  var
-    centroCusto : ICentroCusto;
-    i: Integer;
-  begin
-    Result := False;
-
-    if FObservers.Count = 0 then
-      Exit;
-
-    for i := 0 to FObservers.Count - 1 do
-    begin
-      centroCusto := FObservers.Items[i];
-
-      Result := centroCusto.Codigo = novoCentroCusto.Codigo;
-      if Result then
-        Break;
-    end;
+    novoCodigo := centroCusto.Codigo;
+    centroCustoResumo := TCentroCustoObserver(TCentroCustoObserver.
+                           Criar.
+                             Codigo(novoCodigo).
+                             Valor(0));
   end;
 
 begin
   Result := Self;
-  PreencherPaiFilho;
+  PreencherObservers;
 
-  if not Contem(centroCustoPai) then
+  if not TValidacoes.ContemCentroCusto(FObservers, centroCustoPai) then
     FObservers.Add(centroCustoPai);
 
-  if not Contem(centroCustoFilho) then
+  if not TValidacoes.ContemCentroCusto(FObservers, centroCustoFilho) then
     FObservers.Add(centroCustoFilho);
+
+  if not TValidacoes.ContemCentroCusto(FObservers, centroCustoResumo) then
+    FObservers.Add(centroCustoResumo);
 end;
 
-procedure TCentroCustoSubject.AtualizarObservers;
+procedure TCentroCustoSubject.AtualizarObservers(valor : Real);
 var
-  observer : ICentroCustoObserver;
-  codigo : string;
+  observer: ICentroCustoObserver;
+  codigo: string;
 begin
   for observer in FObservers do
   begin
-    if Length(observer.Codigo) = 2 then
-      codigo := Copy(Self.Codigo, 0, 2)
-    else
-      codigo := Copy(Self.Codigo, 2, 4);
+    codigo := FCodigo;
+
+    case Length(observer.Codigo) of
+      2: codigo := TValidacoes.RetornarCodigoPai(FCodigo);
+      4: codigo := TValidacoes.RetonarCodigoFilho(FCodigo);
+    end;
 
     if observer.Codigo = codigo then
-      observer.AtualizarObserver(Self.Valor);
+      observer.AtualizarObserver(valor);
   end;
 end;
 
@@ -197,7 +169,13 @@ begin
   Result := Self.Create;
 end;
 
-function TCentroCustoSubject.Observers: TList<ICentroCustoObserver>;
+function TCentroCustoSubject.Observers(observers: TList<ICentroCustoObserver>): ICentroCustoSubject;
+begin
+  Result := Self;
+  FObservers := observers;
+end;
+
+function TCentroCustoSubject.observers: TList<ICentroCustoObserver>;
 begin
   Result := FObservers;
 end;
@@ -205,14 +183,27 @@ end;
 function TCentroCustoSubject.Valor(value: Real): ICentroCusto;
 begin
   inherited;
-  AtualizarObservers;
+  AtualizarObservers(value);
+end;
+
+function TCentroCustoSubject.ValorTotal: Real;
+var
+  total : Real;
+  centroCusto : ICentroCustoObserver;
+begin
+  total := 0;
+  for centroCusto in FObservers do
+    if Length(centroCusto.Codigo) = 6 then
+      total := total + centroCusto.Valor;
+
+  Result := total;
 end;
 
 { TCentroCustoObserver }
 
 procedure TCentroCustoObserver.AtualizarObserver(novoValor: Real);
 begin
-  FValor := FValor + valor;
+  FValor := FValor + novoValor;
 end;
 
 constructor TCentroCustoObserver.Create;
@@ -223,6 +214,118 @@ end;
 class function TCentroCustoObserver.Criar: ICentroCustoObserver;
 begin
   Result := Self.Create;
+end;
+
+{ TValidacoesCentroCusto }
+
+class function TValidacoes.ContemCentroCusto(centrosCusto: TList<ICentroCustoObserver>; novoCentroCusto: ICentroCusto): Boolean;
+var
+  centroCusto: ICentroCusto;
+begin
+  Result := False;
+
+  if centrosCusto.Count = 0 then
+    Exit;
+
+  for centroCusto in centrosCusto do
+  begin
+    Result := centroCusto.Codigo = novoCentroCusto.Codigo;
+
+    if Result then
+      Break;
+  end;
+end;
+
+class function TValidacoes.ContemCentroCusto(centrosCusto: TList<ICentroCustoSubject>; novoCentroCusto: ICentroCusto): Boolean;
+var
+  centroCusto: ICentroCusto;
+begin
+  Result := False;
+  if not Assigned(centrosCusto) then
+    Exit;
+
+  if centrosCusto.Count = 0 then
+    Exit;
+
+  for centroCusto in centrosCusto do
+  begin
+    Result := centroCusto.Codigo = novoCentroCusto.Codigo;
+
+    if Result then
+      Break;
+  end;
+end;
+
+class function TValidacoes.PosicaoCentroCusto(centrosCusto: TList<ICentroCustoObserver>; novoCentroCusto: ICentroCusto): Integer;
+var
+  posicaoCentroCusto : integer;
+  centroCusto: ICentroCustoObserver;
+begin
+  posicaoCentroCusto := 0;
+  Result := posicaoCentroCusto;
+
+  if not ContemCentroCusto(centrosCusto, novoCentroCusto) then
+    Exit;
+
+  for centroCusto in centrosCusto do
+  begin
+    if centroCusto.Codigo = novoCentroCusto.Codigo then
+      Break;
+
+    Inc(posicaoCentroCusto);
+  end;
+
+  Result := posicaoCentroCusto;
+end;
+
+class function TValidacoes.PosicaoCentroCusto(centrosCusto: TList<ICentroCustoSubject>; novoCentroCusto: ICentroCusto): Integer;
+var
+  posicaoCentroCusto : integer;
+  centroCusto: ICentroCustoSubject;
+begin
+  posicaoCentroCusto := 0;
+  Result := posicaoCentroCusto;
+
+  if not ContemCentroCusto(centrosCusto, novoCentroCusto) then
+    Exit;
+
+  for centroCusto in centrosCusto do
+  begin
+    if centroCusto.Codigo = novoCentroCusto.Codigo then
+      Break;
+
+    Inc(posicaoCentroCusto);
+  end;
+
+  Result := posicaoCentroCusto;
+end;
+
+class function TValidacoes.RetonarCodigoFilho(codigo: string): string;
+begin
+  Result := Copy(codigo, 3, 4);
+end;
+
+class function TValidacoes.RetornarCodigoPai(codigo: string): string;
+begin
+  Result := Copy(codigo, 0, 2);
+end;
+
+class procedure TValidacoes.ValidarCodigo(codigo: string);
+var
+  codigoPai, codigoFilho: Integer;
+begin
+  if Length(codigo) <> 6 then
+    raise ECodigoInvalidoException.Create('O código do centro de custo deve conter 6 dígitos');
+
+  codigoPai := StrToInt(TValidacoes.RetornarCodigoPai(codigo));
+
+  if not (codigoPai in [1..99]) then
+    raise ECodigoInvalidoException.Create('O código do centro de custo pai aceita somente valores de 01 até 99');
+
+  codigoFilho := StrToInt(TValidacoes.RetonarCodigoFilho(codigo));
+
+  if (codigoFilho < 1) or (codigoFilho > 9999) then
+    raise ECodigoInvalidoException.Create('O código do centro de custo filho aceita somente valores de 0001 ate 9999');
 end;
 
 end.
